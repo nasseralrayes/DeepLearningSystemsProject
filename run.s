@@ -5,7 +5,7 @@
 #SBATCH --time=24:00:00
 #SBATCH --mem=200GB
 #SBATCH --gres=gpu:1
-#SBATCH --job-name=torch_farris
+#SBATCH --job-name=torch_nasser
 #SBATCH --mail-type=END
 #SBATCH --mail-user=nka8061@nyu.edu
 #SBATCH --output=slurm_%j.out
