@@ -11,7 +11,7 @@ import numpy as np
 from torch.utils.data import Dataset
 import nibabel
 from scipy import ndimage
-from skimage import io
+#from skimage import io
 
 class BrainS18Dataset(Dataset):
 

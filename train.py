@@ -15,7 +15,7 @@ import datetime
 
 from torch.utils.data import Dataset, DataLoader
 # import torchvision
-#from tqdm.auto import tqdms
+#from tqdm import tqdms
 
 import argparse
 from src.data.torch_utils import MonkeyEyeballsDataset
@@ -35,13 +35,6 @@ parser.add_argument('--save', default='models/run_{}'.format(datetime.datetime.t
     help='path to save models and losses')
 parser.add_argument('--batch', default=8, type=int, metavar='BATCH',
     help='number of samples per mini-batch')
-parser.add_argument('--warm_start_batch', default=0, type=int,
-    help='Batch number to warm start on')
-parser.add_argument('--warm_start_epoch', default=0, type=int,
-    help='Epoch number to warm start on')
-parser.add_argument('--warm_start_model', default=None, type=str,
-    help='Model filepath to warm start on')
-
 
 def main():
     args = parser.parse_args()
@@ -150,8 +143,8 @@ def main():
                     print(val_loss_epoch)
                     print('TRAIN LOSS EPOCH-----------------------------------------------------')
                     print(train_loss_epoch)
-                    np.save(os.path.join(args.save, "val_loss_epoch.npy"), np.asarray(val_loss_epoch))
-                    np.save(os.path.join(args.save, "train_loss_epoch.npy"), np.asarray(train_loss_epoch))
+                    #np.save(os.path.join(args.save, "val_loss_epoch.npy"), np.asarray(val_loss_epoch))
+                    #np.save(os.path.join(args.save, "train_loss_epoch.npy"), np.asarray(train_loss_epoch))
                     
                     torch.cuda.empty_cache()
                     gc.collect()
@@ -237,17 +230,6 @@ def main():
         model.load_state_dict(warm_start['state_dict'])
         OPTIMIZER.load_state_dict(warm_start['optimizer'])
         args.save = os.path.dirname(args.warm_start_model)
-        
-
-    # # load in in case of warm start
-    # warm_start = torch.load('models/models/epoch_0_batch_100.pth.tar') 
-    # model.load_state_dict(warm_start['state_dict'])
-    # OPTIMIZER.load_state_dict(warm_start['optimizer'])
-
-    # if warm_start.get('epoch') is not None:
-    #     current_epoch = warm_start.get('epoch')
-    # else:
-    #     current_epoch = 0
 
     train(dataloader_train=dataloader_train, 
           dataloader_val=dataloader_val,
