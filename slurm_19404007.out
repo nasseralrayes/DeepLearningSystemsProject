@@ -1,0 +1,34 @@
+Not a conda environment: /scratch/fda239/penv
+/opt/slurm/data/slurmd/job19404007/slurm_script: line 17: cd: /scratch/fda239/Capstone2021: No such file or directory
+156
+1
+200 epochs in total, 156 batches per epoch
+Start epoch 0
+/scratch/nka8061/DeepLearningSystemsProject/src/models/from_scratch/resnet_for_multimodal_regression.py:152: UserWarning: nn.init.kaiming_normal is now deprecated in favor of nn.init.kaiming_normal_.
+  m.weight = nn.init.kaiming_normal(m.weight, mode='fan_out')
+Traceback (most recent call last):
+  File "train.py", line 267, in <module>
+    main()
+  File "train.py", line 252, in main
+    train(dataloader_train=dataloader_train, 
+  File "train.py", line 101, in train
+    preds = model(scan.unsqueeze(1),iop)
+  File "/home/nka8061/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/scratch/nka8061/DeepLearningSystemsProject/src/models/from_scratch/resnet_for_multimodal_regression.py", line 191, in forward
+    x = self.layer4(x)
+  File "/home/nka8061/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/nka8061/.local/lib/python3.8/site-packages/torch/nn/modules/container.py", line 141, in forward
+    input = module(input)
+  File "/home/nka8061/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/scratch/nka8061/DeepLearningSystemsProject/src/models/from_scratch/resnet_for_multimodal_regression.py", line 100, in forward
+    out = self.conv3(out)
+  File "/home/nka8061/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/nka8061/.local/lib/python3.8/site-packages/torch/nn/modules/conv.py", line 592, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+  File "/home/nka8061/.local/lib/python3.8/site-packages/torch/nn/modules/conv.py", line 587, in _conv_forward
+    return F.conv3d(
+RuntimeError: CUDA out of memory. Tried to allocate 1024.00 MiB (GPU 0; 31.75 GiB total capacity; 29.81 GiB already allocated; 725.50 MiB free; 29.84 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

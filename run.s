@@ -7,12 +7,12 @@
 #SBATCH --gres=gpu:1
 #SBATCH --job-name=torch_farris
 #SBATCH --mail-type=END
-#SBATCH --mail-user=fda239@nyu.edu
+#SBATCH --mail-user=nka8061@nyu.edu
 #SBATCH --output=slurm_%j.out
 
 module purge
 module load cuda/11.3.1 
-source activate /scratch/fda239/penv
+source activate /scratch/nka8061/penv
 
-cd /scratch/fda239/Capstone2021
+cd /scratch/nka8061/Capstone2021
 python train.py
