@@ -14,5 +14,5 @@ module purge
 module load cuda/11.3.1 
 source activate /scratch/nka8061/penv
 
-cd /scratch/nka8061/Capstone2021
+cd /scratch/nka8061/DeepLearningSystemsProject
 python train.py
