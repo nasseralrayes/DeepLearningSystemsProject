@@ -15,4 +15,4 @@ module load cuda/11.3.1
 source activate /scratch/nka8061/penv
 
 cd /scratch/nka8061/DeepLearningSystemsProject
-python train.py
+python train.py  --pretrain_model src/models/pretrain/resnet_50.pth
