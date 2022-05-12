@@ -33,13 +33,8 @@ parser.add_argument('--save', default='models/run_{}'.format(datetime.datetime.t
     help='path to save models and losses')
 parser.add_argument('--batch', default=2, type=int, metavar='BATCH',
     help='number of samples per mini-batch')
-parser.add_argument('--pretrain_batch', default=0, type=int,
-    help='Batch number to warm start on')
-parser.add_argument('--pretrain_epoch', default=0, type=int,
-    help='Epoch number to warm start on')
 parser.add_argument('--pretrain_model', default=None, type=str,
     help='Model filepath to warm start on')
-
 
 def main():
     args = parser.parse_args()
@@ -56,8 +51,6 @@ def main():
               val_interval,
               save_interval, 
               save_folder,
-              pretrain_epoch=0,
-              pretrain_batch=0,
               loss=nn.MSELoss(reduction='sum'), 
               total_epochs=100):
 
@@ -68,21 +61,21 @@ def main():
         if device == 'cuda':
           loss = loss.to(device)
         
-
         model.train()
-        train_time_sp = time.time()
 
         temp_train = []
         temp_val = []
         
         train_loss_epoch = []
         val_loss_epoch = []
-        for epoch in range(args.pretrain_epoch, total_epochs):
+
+        for epoch in range(total_epochs):
+
             print('Start epoch {}'.format(epoch))
             
-            for batch_id, batch_data in enumerate(dataloader_train, start=args.pretrain_batch):
+            for batch_id, batch_data in enumerate(dataloader_train):
+
                 # getting data batch
-                batch_id_sp = epoch * batches_per_epoch + batch_id 
                 icp = batch_data['icp'].float().unsqueeze(1).cuda()
                 iop = batch_data['iop'].float().cuda()
                 scan = batch_data['scan'].float().cuda()
@@ -97,30 +90,24 @@ def main():
                 optimizer.zero_grad()
 
                 # add fake channel dimension as 5-D input is expected
-                preds = model(scan.unsqueeze(1),iop)
+                preds = model(scan.unsqueeze(1), iop)
                 
                 # calculating loss
                 loss_value = loss(preds, icp)
                 loss_value.backward()                
                 optimizer.step()
-
-                avg_batch_time = (time.time() - train_time_sp) / (1 + batch_id_sp)
-                print(
-                    'Batch: {}-{} ({}), loss = {:.3f}, avg_batch_time = {:.3f}'\
-                    .format(epoch, batch_id, batch_id_sp, loss_value, avg_batch_time))
                 
                 temp_train.append(loss_value.item())
                 
-                #get validation loss
+                # get validation loss
                 if batch_id == len(dataloader_train)-1:
                     train_loss_epoch.append(np.mean(temp_train[:]))
                     temp_train.clear()
                     
-                    
                     model.eval()
+
                     print('')
                     print('Validating...')
-
                 
                     for batch_id_val, batch_data_val in enumerate(dataloader_val):
                         icp_val = batch_data_val['icp'].float().unsqueeze(1).cuda()
@@ -141,45 +128,20 @@ def main():
                         
                     val_loss_epoch.append(np.mean(temp_val[:]))
                     temp_val.clear()
-
-                    print('VAL LOSS EPOCH-----------------------------------------------------')
-                    print(val_loss_epoch)
-                    print('TRAIN LOSS EPOCH-----------------------------------------------------')
-                    print(train_loss_epoch)
-                    np.save(os.path.join(args.save, "val_loss_epoch.npy"), np.asarray(val_loss_epoch))
-                    np.save(os.path.join(args.save, "train_loss_epoch.npy"), np.asarray(train_loss_epoch))
                     
                     torch.cuda.empty_cache()
                     gc.collect()
                     model.train()
-
-                # save model
-                if batch_id_sp != 0 and batch_id_sp % save_interval == 0:
-                    model_save_path = os.path.join(save_folder, 'epoch_{}_batch_{}.pth.tar'\
-                                                   .format(epoch, batch_id))
-                    model_save_dir = os.path.dirname(model_save_path)
-                    if not os.path.exists(model_save_dir):
-                        os.makedirs(model_save_dir)
-                    
-                    print('Save checkpoints: epoch = {}, batch_id = {}'.format(epoch, batch_id)) 
-                    torch.save({
-                                'epoch': epoch,
-                                'batch_id': batch_id,
-                                'state_dict': model.state_dict(),
-                                'optimizer': optimizer.state_dict()},
-                                model_save_path)
-                    print('Saving to {}'.format(model_save_path))
             
-            print('lr = {}'.format(scheduler.get_lr()))
-
         print('Finished training')
+
+        print('train losses =', train_loss_epoch)
+        print('validation losses =', val_loss_epoch)
 
     labels = pd.read_csv(args.labels)
     labels = labels[labels['torch_present'] & ~labels['icp'].isnull() & ~labels['iop'].isnull() & labels['icp'] > 0] 
     labels['icp'] = labels['icp'].astype('float')
     labels['iop'] = labels['iop'].astype('float')
-
-
 
     train_labels = labels[(labels['monkey_id'] != 14) & (labels['monkey_id'] != 9)]
 
@@ -202,43 +164,26 @@ def main():
         )
     ])
 
-
     med_train = MonkeyEyeballsDataset(args.scans, train_labels, transform=transform)
     med_val = MonkeyEyeballsDataset(args.scans, val_labels)
 
     dataloader_train = DataLoader(med_train, batch_size=args.batch, shuffle=True,pin_memory=True, num_workers=2) 
     dataloader_val = DataLoader(med_val, batch_size=1, shuffle=False)
 
-    print(len(dataloader_train))
-    print(len(dataloader_val))
-
-
     model = resnet.resnet50(sample_input_D=128, sample_input_H=128, sample_input_W=512).cuda()
 
-    OPTIMIZER = torch.optim.Adamax(model.parameters(), lr=args.lr)
-    SCHEDULER = lr_scheduler.ExponentialLR(OPTIMIZER, gamma=0.99)
-    LOSS = nn.MSELoss(reduction='mean')
+    net_dict = model.state_dict() 
 
     if args.pretrain_model is not None:
-        print ('loading pretrained model {}'.format(opt.pretrain_path))
-        pretrain = torch.load(opt.pretrain_path)
+        print ('loading pretrained model {}'.format(args.pretrain_model))
+        pretrain = torch.load(args.pretrain_model)
         pretrain_dict = {k: v for k, v in pretrain['state_dict'].items() if k in net_dict.keys()}
         net_dict.update(pretrain_dict)
         model.load_state_dict(net_dict)
 
-        new_parameters = [] 
-        for pname, p in model.named_parameters():
-            for layer_name in opt.new_layer_names:
-                if pname.find(layer_name) >= 0:
-                    new_parameters.append(p)
-                    break
-
-        new_parameters_id = list(map(id, new_parameters))
-        base_parameters = list(filter(lambda p: id(p) not in new_parameters_id, model.parameters()))
-        parameters = {'base_parameters': base_parameters, 
-                      'new_parameters': new_parameters}
-        
-        return model, parameters
+    OPTIMIZER = torch.optim.Adamax(model.parameters(), lr=args.lr)
+    SCHEDULER = lr_scheduler.ExponentialLR(OPTIMIZER, gamma=0.99)
+    LOSS = nn.MSELoss(reduction='mean')
 
     train(dataloader_train=dataloader_train, 
           dataloader_val=dataloader_val,
@@ -246,13 +191,10 @@ def main():
           optimizer=OPTIMIZER, 
           scheduler=SCHEDULER, 
           total_epochs=args.epochs, 
-          pretrain_epoch=args.pretrain_epoch,
-          pretrain_batch=args.pretrain_batch,
           save_interval=159, 
           save_folder=args.save, # change this for a new run or change to pass it in as command line arg
           val_interval=10,
           loss=LOSS)
-
 
 if __name__ == '__main__':
     main()
