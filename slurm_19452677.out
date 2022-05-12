@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "train.py", line 4, in <module>
-    import torch
-  File "/home/nka8061/.local/lib/python3.8/site-packages/torch/__init__.py", line 721, in <module>
-    _C._initExtension(manager_path())
-  File "/home/nka8061/.local/lib/python3.8/site-packages/torch/__init__.py", line 715, in manager_path
-    raise RuntimeError("Unable to find torch_shm_manager at " + path)
-RuntimeError: Unable to find torch_shm_manager at /home/nka8061/.local/lib/python3.8/site-packages/torch/bin/torch_shm_manager
