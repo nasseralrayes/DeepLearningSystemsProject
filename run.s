@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --nodes=1
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
-#SBATCH --time=24:00:00
+#SBATCH --time=18:00:00
 #SBATCH --mem=200GB
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --job-name=torch_nasser
 #SBATCH --mail-type=END
 #SBATCH --mail-user=nka8061@nyu.edu

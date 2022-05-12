@@ -19,18 +19,17 @@ import argparse
 from src.data.torch_utils import MonkeyEyeballsDataset
 from src.models.from_scratch import resnet_for_multimodal_regression as resnet
 
+from tqdm import tqdm
+
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument('--labels', default='data/monkey_data.csv', metavar='DF',
     help='path to ICP/IOP dataframe')
-parser.add_argument('--scans', default='../drive/MyDrive/CDS Capstone Project/Data/torch_standardized', metavar='DIR',
+parser.add_argument('--scans', default='data/torch_standardized', metavar='DIR',
     help='path to dataset folder')
-parser.add_argument('--epochs', default=1, type=int, metavar='N',
+parser.add_argument('--epochs', default=50, type=int, metavar='N',
     help='number of total epochs to run')
 parser.add_argument('--lr', default=3e-4, type=float, metavar='LR',
     help='initial learning rate')
-parser.add_argument('--save', default='models/run_{}'.format(datetime.datetime.today().strftime('%Y-%m-%d-%H-%M')), 
-    type=str, metavar='SAVE_DIR',
-    help='path to save models and losses')
 parser.add_argument('--batch', default=1, type=int, metavar='BATCH',
     help='number of samples per mini-batch')
 parser.add_argument('--pretrain_model', default=None, type=str,
@@ -49,8 +48,6 @@ def main():
               optimizer, 
               scheduler, 
               val_interval,
-              save_interval, 
-              save_folder,
               loss=nn.MSELoss(reduction='sum'), 
               total_epochs=100):
 
@@ -69,7 +66,7 @@ def main():
         train_loss_epoch = []
         val_loss_epoch = []
 
-        for epoch in range(total_epochs):
+        for epoch in tqdm(range(total_epochs)):
 
             print('Start epoch {}'.format(epoch))
             
@@ -132,11 +129,14 @@ def main():
                     torch.cuda.empty_cache()
                     gc.collect()
                     model.train()
+        
+            print('current train losses =', train_loss_epoch)
+            print('current validation losses =', val_loss_epoch)
             
         print('Finished training')
 
-        print('train losses =', train_loss_epoch)
-        print('validation losses =', val_loss_epoch)
+        print('final train losses =', train_loss_epoch)
+        print('final validation losses =', val_loss_epoch)
 
     labels = pd.read_csv(args.labels)
     labels = labels[labels['torch_present'] & ~labels['icp'].isnull() & ~labels['iop'].isnull() & labels['icp'] > 0] 
@@ -168,7 +168,7 @@ def main():
     med_val = MonkeyEyeballsDataset(args.scans, val_labels)
 
     dataloader_train = DataLoader(med_train, batch_size=args.batch, shuffle=True,pin_memory=True, num_workers=2) 
-    dataloader_val = DataLoader(med_val, batch_size=1, shuffle=False)
+    dataloader_val = DataLoader(med_val, batch_size=args.batch, shuffle=False)
 
     model = resnet.resnet50(sample_input_D=128, sample_input_H=128, sample_input_W=512).cuda()
 
@@ -191,8 +191,6 @@ def main():
           optimizer=OPTIMIZER, 
           scheduler=SCHEDULER, 
           total_epochs=args.epochs, 
-          save_interval=159, 
-          save_folder=args.save, # change this for a new run or change to pass it in as command line arg
           val_interval=10,
           loss=LOSS)
 
