@@ -1,10 +1,10 @@
 # DeepLearningSystemsProject
 
-The goal of this project is to fit 3D CNNs on optical coherence tomography (OCT) scans of the eyeball to measure the relationship between an organism’s eyeball shape, intraocular pressure ("IOP") and intracranial pressure ("ICP"). Since we only had around 1500 scans to work with, we attempted various training techniques to solve data scarcity problems, including data augmentation and warm-starting from pretrained modelss. A large portion of this project was spent consolidating, evaluating, and transforming the data into a model-ready state. To save you the hassle of needing to convert the data to a Python-readable state, we stored all the data [here](https://drive.google.com/drive/folders/1V_glXCRkb0v1KCIRqZevNC-ZhherPsWg?usp=sharing).
+The goal of this project is to fit 3D CNNs on optical coherence tomography (OCT) scans of the eyeball to measure the relationship between an organism’s eyeball shape, intraocular pressure ("IOP") and intracranial pressure ("ICP"). Since we only had around 1500 scans to work with, we attempted various training techniques to solve data scarcity problems, including data augmentation and warm-starting from pretrained modelss. A large portion of this project was spent consolidating, evaluating, and transforming the data into a model-ready state. To save you the hassle of needing to convert the data to a Python-readable state, we stored all the transformed scans [here](https://drive.google.com/drive/folders/1V_glXCRkb0v1KCIRqZevNC-ZhherPsWg?usp=sharing).
 
 ## Moving Data
 
-In order to first move the scan data into the right directory, we needed to use the `rclone` command to transfer files from our Google Drive to NYUs HPC. An example of such a command is below: 
+In order to first move the scan data into the right directory, we needed to use the `rclone` command to transfer files from our Google Drive to NYU's HPC. An example of such a command is below: 
 
 `rclone copy dlsysproject:"DeepLearningSystemsProjec/data/torch_standardized" /home/{netID}/DeepLearningSystemsProjec/data/torch_standardized`
 
@@ -12,7 +12,7 @@ In order to first move the scan data into the right directory, we needed to use 
 
 ### Training from scratch:
 
-To then train the data, we use the standard NYU HPC `sbatch` command.
+To then train the data, we used the standard HPC `sbatch` command.
 
 `sbatch run.s`
 
@@ -24,5 +24,4 @@ Be sure to download the pretrained model from this [link](https://drive.google.c
 
 `sbatch run_pretrain.s`
 
-<<<<<<< HEAD
 `python train.py  --pretrain_model src/models/pretrain/resnet_50.pth`
