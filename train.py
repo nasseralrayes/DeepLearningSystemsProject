@@ -31,7 +31,7 @@ parser.add_argument('--lr', default=3e-4, type=float, metavar='LR',
 parser.add_argument('--save', default='models/run_{}'.format(datetime.datetime.today().strftime('%Y-%m-%d-%H-%M')), 
     type=str, metavar='SAVE_DIR',
     help='path to save models and losses')
-parser.add_argument('--batch', default=``, type=int, metavar='BATCH',
+parser.add_argument('--batch', default=1, type=int, metavar='BATCH',
     help='number of samples per mini-batch')
 parser.add_argument('--pretrain_model', default=None, type=str,
     help='Model filepath to warm start on')
