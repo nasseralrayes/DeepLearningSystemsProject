@@ -7,15 +7,13 @@ from torch import optim
 from torch.optim import lr_scheduler
 import time
 import torchio
-#import json
-#import cv2
+
+
 import gc
 torch.cuda.empty_cache()
 import datetime
 
 from torch.utils.data import Dataset, DataLoader
-# import torchvision
-#from tqdm import tqdms
 
 import argparse
 from src.data.torch_utils import MonkeyEyeballsDataset
@@ -24,21 +22,27 @@ from src.models.from_scratch import resnet_for_multimodal_regression as resnet
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument('--labels', default='data/monkey_data.csv', metavar='DF',
     help='path to ICP/IOP dataframe')
-parser.add_argument('--scans', default='data/torch_standardized', metavar='DIR',
+parser.add_argument('--scans', default='../drive/MyDrive/CDS Capstone Project/Data/torch_standardized', metavar='DIR',
     help='path to dataset folder')
-parser.add_argument('--epochs', default=200, type=int, metavar='N',
+parser.add_argument('--epochs', default=1, type=int, metavar='N',
     help='number of total epochs to run')
 parser.add_argument('--lr', default=3e-4, type=float, metavar='LR',
     help='initial learning rate')
 parser.add_argument('--save', default='models/run_{}'.format(datetime.datetime.today().strftime('%Y-%m-%d-%H-%M')), 
     type=str, metavar='SAVE_DIR',
     help='path to save models and losses')
-parser.add_argument('--batch', default=8, type=int, metavar='BATCH',
+parser.add_argument('--batch', default=2, type=int, metavar='BATCH',
     help='number of samples per mini-batch')
+parser.add_argument('--pretrain_batch', default=0, type=int,
+    help='Batch number to warm start on')
+parser.add_argument('--pretrain_epoch', default=0, type=int,
+    help='Epoch number to warm start on')
+parser.add_argument('--pretrain_model', default=None, type=str,
+    help='Model filepath to warm start on')
+
 
 def main():
     args = parser.parse_args()
-
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     seed = 12345
@@ -52,10 +56,11 @@ def main():
               val_interval,
               save_interval, 
               save_folder,
-              warm_start_epoch=0,
-              warm_start_batch=0,
+              pretrain_epoch=0,
+              pretrain_batch=0,
               loss=nn.MSELoss(reduction='sum'), 
               total_epochs=100):
+
         # settings
         batches_per_epoch = len(dataloader_train)
         print('{} epochs in total, {} batches per epoch'.format(total_epochs, batches_per_epoch))
@@ -72,10 +77,10 @@ def main():
         
         train_loss_epoch = []
         val_loss_epoch = []
-        for epoch in range(args.warm_start_epoch, total_epochs):
+        for epoch in range(args.pretrain_epoch, total_epochs):
             print('Start epoch {}'.format(epoch))
             
-            for batch_id, batch_data in enumerate(dataloader_train, start=args.warm_start_batch):
+            for batch_id, batch_data in enumerate(dataloader_train, start=args.pretrain_batch):
                 # getting data batch
                 batch_id_sp = epoch * batches_per_epoch + batch_id 
                 icp = batch_data['icp'].float().unsqueeze(1).cuda()
@@ -90,6 +95,7 @@ def main():
                 iop = (iop - 22) / 13
 
                 optimizer.zero_grad()
+
                 # add fake channel dimension as 5-D input is expected
                 preds = model(scan.unsqueeze(1),iop)
                 
@@ -104,9 +110,8 @@ def main():
                     .format(epoch, batch_id, batch_id_sp, loss_value, avg_batch_time))
                 
                 temp_train.append(loss_value.item())
-                #get validation loss
-                #if batch_id_sp % val_interval == 0:
                 
+                #get validation loss
                 if batch_id == len(dataloader_train)-1:
                     train_loss_epoch.append(np.mean(temp_train[:]))
                     temp_train.clear()
@@ -120,18 +125,16 @@ def main():
                     for batch_id_val, batch_data_val in enumerate(dataloader_val):
                         icp_val = batch_data_val['icp'].float().unsqueeze(1).cuda()
                         iop_val = batch_data_val['iop'].float().cuda()
-                        
-
+                      
                         scan_val = batch_data_val['scan'].float().cuda()
 
-                        # scan_val = (scan_val - 30) / 19
                         icp_val = (icp_val - 15) / 11
                         iop_val = (iop_val -22)/ 13
 
                         if device == 'cuda': 
                             scan_val = scan_val.to(device)
-                        preds_val = model(scan_val.unsqueeze_(1),iop_val)
 
+                        preds_val = model(scan_val.unsqueeze_(1),iop_val)
                                 
                         loss_value_val = loss(preds_val, icp_val)
                         temp_val.append(loss_value_val.item())
@@ -143,8 +146,8 @@ def main():
                     print(val_loss_epoch)
                     print('TRAIN LOSS EPOCH-----------------------------------------------------')
                     print(train_loss_epoch)
-                    #np.save(os.path.join(args.save, "val_loss_epoch.npy"), np.asarray(val_loss_epoch))
-                    #np.save(os.path.join(args.save, "train_loss_epoch.npy"), np.asarray(train_loss_epoch))
+                    np.save(os.path.join(args.save, "val_loss_epoch.npy"), np.asarray(val_loss_epoch))
+                    np.save(os.path.join(args.save, "train_loss_epoch.npy"), np.asarray(train_loss_epoch))
                     
                     torch.cuda.empty_cache()
                     gc.collect()
@@ -167,9 +170,7 @@ def main():
                                 model_save_path)
                     print('Saving to {}'.format(model_save_path))
             
-            
             print('lr = {}'.format(scheduler.get_lr()))
-
 
         print('Finished training')
 
@@ -178,21 +179,15 @@ def main():
     labels['icp'] = labels['icp'].astype('float')
     labels['iop'] = labels['iop'].astype('float')
 
-    # print(labels)
+
+
     train_labels = labels[(labels['monkey_id'] != 14) & (labels['monkey_id'] != 9)]
-    # 8 handpicked examples 
+
+    # 4 handpicked examples 
     val_examples = [1751, 1754, 1761, 1766]
     val_labels = labels[labels['id'].isin(val_examples)]
 
-
-    # # get train and val labels
-    # train_labels =labels.sample(frac=0.99,random_state=200) 
-    # val_labels =labels.drop(train_labels.index)
-
-    # print(len(train_labels))
-    # print(len(val_labels))
-
-    #TRANSFORM###############################################################################################
+    # transform
     transform = torchio.Compose([
         torchio.RandomFlip(axes=2, p=0.5),
         torchio.RandomAffine(
@@ -207,13 +202,12 @@ def main():
         )
     ])
 
-    #TRANSFORM###############################################################################################
 
     med_train = MonkeyEyeballsDataset(args.scans, train_labels, transform=transform)
     med_val = MonkeyEyeballsDataset(args.scans, val_labels)
 
-    dataloader_train = DataLoader(med_train, batch_size=args.batch, shuffle=True,pin_memory=True,num_workers=2 ) 
-    dataloader_val = DataLoader(med_val, batch_size=4, shuffle=False)
+    dataloader_train = DataLoader(med_train, batch_size=args.batch, shuffle=True,pin_memory=True, num_workers=2) 
+    dataloader_val = DataLoader(med_val, batch_size=1, shuffle=False)
 
     print(len(dataloader_train))
     print(len(dataloader_val))
@@ -225,11 +219,26 @@ def main():
     SCHEDULER = lr_scheduler.ExponentialLR(OPTIMIZER, gamma=0.99)
     LOSS = nn.MSELoss(reduction='mean')
 
-    if args.warm_start_model is not None:
-        warm_start = torch.load(args.warm_start_model)
-        model.load_state_dict(warm_start['state_dict'])
-        OPTIMIZER.load_state_dict(warm_start['optimizer'])
-        args.save = os.path.dirname(args.warm_start_model)
+    if args.pretrain_model is not None:
+        print ('loading pretrained model {}'.format(opt.pretrain_path))
+        pretrain = torch.load(opt.pretrain_path)
+        pretrain_dict = {k: v for k, v in pretrain['state_dict'].items() if k in net_dict.keys()}
+        net_dict.update(pretrain_dict)
+        model.load_state_dict(net_dict)
+
+        new_parameters = [] 
+        for pname, p in model.named_parameters():
+            for layer_name in opt.new_layer_names:
+                if pname.find(layer_name) >= 0:
+                    new_parameters.append(p)
+                    break
+
+        new_parameters_id = list(map(id, new_parameters))
+        base_parameters = list(filter(lambda p: id(p) not in new_parameters_id, model.parameters()))
+        parameters = {'base_parameters': base_parameters, 
+                      'new_parameters': new_parameters}
+        
+        return model, parameters
 
     train(dataloader_train=dataloader_train, 
           dataloader_val=dataloader_val,
@@ -237,8 +246,8 @@ def main():
           optimizer=OPTIMIZER, 
           scheduler=SCHEDULER, 
           total_epochs=args.epochs, 
-          warm_start_epoch=args.warm_start_epoch,
-          warm_start_batch=args.warm_start_batch,
+          pretrain_epoch=args.pretrain_epoch,
+          pretrain_batch=args.pretrain_batch,
           save_interval=159, 
           save_folder=args.save, # change this for a new run or change to pass it in as command line arg
           val_interval=10,
@@ -247,7 +256,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-    
-
-
