@@ -30,7 +30,7 @@ parser.add_argument('--epochs', default=50, type=int, metavar='N',
     help='number of total epochs to run')
 parser.add_argument('--lr', default=3e-4, type=float, metavar='LR',
     help='initial learning rate')
-parser.add_argument('--batch', default=1, type=int, metavar='BATCH',
+parser.add_argument('--batch', default=8, type=int, metavar='BATCH',
     help='number of samples per mini-batch')
 parser.add_argument('--pretrain_model', default=None, type=str,
     help='Model filepath to warm start on')
