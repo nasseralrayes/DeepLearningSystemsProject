@@ -8,7 +8,6 @@ from torch.optim import lr_scheduler
 import time
 import torchio
 
-
 import gc
 torch.cuda.empty_cache()
 import datetime
@@ -144,7 +143,7 @@ def main():
     labels['iop'] = labels['iop'].astype('float')
 
     train_labels = labels[(labels['monkey_id'] != 14) & (labels['monkey_id'] != 9)]
-    val_labels = labels[(labels['monkey_id'] == 14) & (labels['monkey_id'] == 9)]
+    val_labels = labels[(labels['monkey_id'] == 14) | (labels['monkey_id'] == 9)]
 
     # transform
     transform = torchio.Compose([
