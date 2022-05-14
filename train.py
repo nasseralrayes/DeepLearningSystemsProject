@@ -30,7 +30,7 @@ parser.add_argument('--epochs', default=50, type=int, metavar='N',
     help='number of total epochs to run')
 parser.add_argument('--lr', default=3e-4, type=float, metavar='LR',
     help='initial learning rate')
-parser.add_argument('--batch', default=8, type=int, metavar='BATCH',
+parser.add_argument('--batch', default=4, type=int, metavar='BATCH',
     help='number of samples per mini-batch')
 parser.add_argument('--pretrain_model', default=None, type=str,
     help='Model filepath to warm start on')
@@ -144,10 +144,7 @@ def main():
     labels['iop'] = labels['iop'].astype('float')
 
     train_labels = labels[(labels['monkey_id'] != 14) & (labels['monkey_id'] != 9)]
-
-    # 4 handpicked examples 
-    val_examples = [1751, 1754, 1761, 1766]
-    val_labels = labels[labels['id'].isin(val_examples)]
+    val_labels = labels[(labels['monkey_id'] == 14) or (labels['monkey_id'] == 9)]
 
     # transform
     transform = torchio.Compose([

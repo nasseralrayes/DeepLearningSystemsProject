@@ -10,7 +10,6 @@ __all__ = [
     'resnet152', 'resnet200'
 ]
 
-
 def conv3x3x3(in_planes, out_planes, stride=1, dilation=1):
     # 3x3x3 convolution with padding
     return nn.Conv3d(
@@ -21,7 +20,6 @@ def conv3x3x3(in_planes, out_planes, stride=1, dilation=1):
         stride=stride,
         padding=dilation,
         bias=False)
-
 
 def downsample_basic_block(x, planes, stride, no_cuda=False):
     out = F.avg_pool3d(x, kernel_size=1, stride=stride)
@@ -35,7 +33,6 @@ def downsample_basic_block(x, planes, stride, no_cuda=False):
     out = Variable(torch.cat([out.data, zero_pads], dim=1))
 
     return out
-
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -67,7 +64,6 @@ class BasicBlock(nn.Module):
         out = self.relu(out)
 
         return out
-
 
 class Bottleneck(nn.Module):
     expansion = 4
@@ -108,7 +104,6 @@ class Bottleneck(nn.Module):
 
         return out
 
-
 class ResNet(nn.Module):
 
     def __init__(self,
@@ -146,7 +141,6 @@ class ResNet(nn.Module):
             nn.ReLU(),
             nn.Linear(1280, 1))
         
-
         for m in self.modules():
             if isinstance(m, nn.Conv3d):
                 m.weight = nn.init.kaiming_normal_(m.weight, mode='fan_out')

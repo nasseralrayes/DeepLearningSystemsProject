@@ -33,3 +33,6 @@ Be sure to download the pretrained model from this [link](https://drive.google.c
 `sbatch run_pretrain.s`
 
 `python train.py  --pretrain_model src/models/pretrain/resnet_50.pth`
+
+## Challenges
+
