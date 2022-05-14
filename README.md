@@ -36,6 +36,8 @@ Be sure to download the pretrained model from this [link](https://drive.google.c
 
 ## Challenges
 
+The largest challenge we faced during this project was cleaning, organizing and augmenting the data. The scans we had were of the optic nerve head, done using a methodology known as optical coherence tomography (OCT) that produced micron-resolution 3D scans. This left us with 4TB of data that had to be converted to a Python-readable format. 
+
 ## Results
 
 The results for the cold-start and pretrained model can be seen below:
