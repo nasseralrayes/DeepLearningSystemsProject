@@ -26,7 +26,7 @@ parser.add_argument('--labels', default='data/monkey_data.csv', metavar='DF',
     help='path to ICP/IOP dataframe')
 parser.add_argument('--scans', default='data/torch_standardized', metavar='DIR',
     help='path to dataset folder')
-parser.add_argument('--epochs', default=50, type=int, metavar='N',
+parser.add_argument('--epochs', default=100, type=int, metavar='N',
     help='number of total epochs to run')
 parser.add_argument('--lr', default=3e-4, type=float, metavar='LR',
     help='initial learning rate')
@@ -144,7 +144,7 @@ def main():
     labels['iop'] = labels['iop'].astype('float')
 
     train_labels = labels[(labels['monkey_id'] != 14) & (labels['monkey_id'] != 9)]
-    val_labels = labels[(labels['monkey_id'] == 14) or (labels['monkey_id'] == 9)]
+    val_labels = labels[(labels['monkey_id'] == 14) & (labels['monkey_id'] == 9)]
 
     # transform
     transform = torchio.Compose([
