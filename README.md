@@ -36,3 +36,10 @@ Be sure to download the pretrained model from this [link](https://drive.google.c
 
 ## Challenges
 
+## Results
+
+The results for the cold-start and pretrained model can be seen below:
+
+<img src="figures/cold-start.png" align=mid />
+
+<img src="figures/pretrained.png" align=mid />
