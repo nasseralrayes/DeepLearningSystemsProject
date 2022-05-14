@@ -10,6 +10,8 @@ In order to first move the scan data into the right directory, we needed to use 
 
 `rclone copy dlsysproject:"DeepLearningSystemsProjec/data/torch_standardized" /home/{netID}/DeepLearningSystemsProjec/data/torch_standardized`
 
+More information on using `rclone` in NYU's HPC environment can be found [here](https://noisyneuron.github.io/nyu-hpc/transfer.html).
+
 ## Pretrained Model
 
 The performance of deep learning models is greatly impacted by the quantity of training data, and we only have 1500 scans from 14 monkeys. We could not guarantee that we could sufficiently train any model from scratch, and finding the optimal hyperparameters would be even harder. Taking a pretrained model and finetuning it on our task could greatly increase the likelihood and speed of training convergence as well as improving the final model accuracy. 
