@@ -16,13 +16,13 @@ More information on using `rclone` in NYU's HPC environment can be found [here](
 
 The performance of deep learning models is greatly impacted by the quantity of training data, and we only have 1500 scans from 14 monkeys. We could not guarantee that we could sufficiently train any model from scratch, and finding the optimal hyperparameters would be even harder. Taking a pretrained model and finetuning it on our task could greatly increase the likelihood and speed of training convergence as well as improving the final model accuracy. 
 
-We used [Tencent’s MedicalNet](https://github.com/Tencent/MedicalNet) as our candidate model. The MedicalNet is a set of ResNets that were pretrained on MRI scan data of the brain. We believed that 3D MRI scans of the brain would be able to adjust the model parameters that reduce error and such parameter tuning would closely resemble a training job on 3D scans of monkey's eyeballs. Thus, through this "warmstarting" method, it's believed that validation convergence could be achieved faster with potentially accuracy. We ran tests on both a standard, untrained ResNet-50 model and a pretrained ResNet-50 model and compared final validation errors.
+We used [Tencent’s MedicalNet](https://github.com/Tencent/MedicalNet) as our candidate model. The MedicalNet is a set of ResNets that were pretrained on MRI scan data of the brain. We believed that 3D MRI scans of the brain would be able to adjust the model parameters that reduce error and such parameter tuning would closely resemble a training job on 3D scans of monkey's eyeballs. Thus, through this "warmstarting" method, it's believed that validation convergence could be achieved faster with potentially higher accuracy. We ran tests on both a standard, untrained ResNet-50 model and a pretrained ResNet-50 model and compared final validation errors.
 
 ## Running train.py
 
 ### Training from scratch:
 
-To then train the data, we used the standard HPC `sbatch` command.
+To train the data, we used the standard HPC `sbatch` command.
 
 `sbatch run.s`
 
@@ -48,4 +48,4 @@ The results for the cold-start and pretrained model can be seen below:
 
 <img src="figures/pretrained.png" align=mid />
 
-As we can see in the plots, our validation loss was decreasing until about ~25 epochs. This indicates that there was a degree of generalization in our modeling, meaning that IOP and eyeball scans are able to provide predictive value for ICP measurements. This is a great start, as it indicates that using IOP and eyeball scans can serve as a substitute to invasive ICP procedures.
+As we can see in the plots, our validation loss was decreasing until about ~25 epochs. This indicates that there was a degree of generalization in our modeling, meaning that IOP and eyeball scans are able to provide predictive value for ICP measurements. This is a great start, as it suggests that using IOP and eyeball scans can serve as a substitute to invasive ICP procedures.
