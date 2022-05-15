@@ -42,10 +42,16 @@ The largest challenge we faced during this project was cleaning, organizing and 
 
 ## Results
 
-The results for the cold-start and pretrained model can be seen below:
+Two approaches were taken for the final modeling results. As the data came from 14 individual monkeys, we decided to have one validation set that was split up by individual scans and not individual monkeys, and another validation set where we used individual monkeys. We believed using scans from the same monkey in both the training and validation set would allow structural changes in the eye to be more easily detected due to IOP changes. The results for this test-train split can be seen below: 
 
-<img src="figures/cold-start.png" align=mid />
+<img src="figures/cold-start-small-val.png" align=mid />
 
-<img src="figures/pretrained.png" align=mid />
+<img src="figures/pretrained-small-val.png" align=mid />
 
 As we can see in the plots, our validation loss was decreasing until about ~25 epochs. This indicates that there was a degree of generalization in our modeling, meaning that IOP and eyeball scans are able to provide predictive value for ICP measurements. This is a great start, as it suggests that using IOP and eyeball scans can serve as a substitute to invasive ICP procedures.
+
+We then changed our validation set such that only monkeys 9 and 14 were used in the validation set and the remaining were used in the train set. The results can be seen below:
+
+<img src="figures/cold-start-full-val.png" align=mid />
+
+<img src="figures/pretrained-full-val.png" align=mid />
