@@ -67,7 +67,7 @@ def main():
 
         for epoch in tqdm(range(total_epochs)):
 
-            print('Start epoch {}'.format(epoch))
+            print('Start epoch {}'.format(epoch+1))
             
             for batch_id, batch_data in enumerate(dataloader_train):
 
