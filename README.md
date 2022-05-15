@@ -55,3 +55,5 @@ We then changed our validation set such that only monkeys 9 and 14 were used in 
 <img src="figures/cold-start-full-val.png" align=mid />
 
 <img src="figures/pretrained-full-val.png" align=mid />
+
+As we can see, the model was unable to learn how changes in IOP impacted ICP. This is potentially due to inconsistencies across the scans from each monkey, but further analysis is required to come to a sound conclusion.
